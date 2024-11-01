@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Realidad Aumentada con Barcode usando WebXR</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/master/aframe/build/aframe-ar.js"></script>
+  <style>
+    body, html { margin: 0; padding: 0; overflow: hidden; }
+    #startButton {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px;
+      background-color: #007bff;
+      color: white;
+      font-size: 18px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+    #startButton.hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Botón para iniciar la cámara -->
+  <button id="startButton">Iniciar AR</button>
+
+  <!-- Escena de AR con marcador barcode -->
+  <a-scene embedded arjs="sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+    <a-marker type="barcode" value="32">
+      <a-video 
+        id="arVideo"
+        src="#videoAR" 
+        position="-0.5 -0.5 0" 
+        rotation="-90 0 0" 
+        width="1.0"        
+        height="0.6"
+        crossorigin="anonymous">
+      </a-video>
+    </a-marker>
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <!-- Video oculto para AR -->
+  <video id="videoAR" loop playsinline style="display: none;">
+    <source src="MVI_1034_1.mp4" type="video/mp4">
+    Tu navegador no soporta la reproducción de este video.
+  </video>
+
+  <script>
+    const videoAR = document.getElementById('videoAR');
+    const startButton = document.getElementById('startButton');
+    let videoReady = false;
+
+    // Espera a que se cargue la página para habilitar el botón de inicio
+    window.addEventListener('load', function () {
+      if (isMobile()) {
+        startButton.classList.remove('hidden');
+      } else {
+        videoReady = true;
+      }
+    });
+
+    function isMobile() {
+      return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    }
+
+    // Iniciar la cámara y video solo después de la interacción del usuario en dispositivos móviles
+    startButton.addEventListener('click', function () {
+      startButton.classList.add('hidden');
+      videoReady = true;
+    });
+
+    // Reproduce el video cuando se detecta el marcador
+    document.querySelector('a-marker').addEventListener('markerFound', function() {
+      if (videoReady) {
+        videoAR.currentTime = 0; // Reiniciar el video
+        videoAR.play();
+      }
+    });
+
+    // Pausa el video cuando se pierde el marcador
+    document.querySelector('a-marker').addEventListener('markerLost', function() {
+      videoAR.pause();
+    });
+  </script>
+
+</body>
+</html>
